@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SaaS-Squasher | WealthTech Platform</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Palette WealthTech Premium */
+            --primary: #4f46e5;       
+            --primary-dark: #3730a3;
+            --bg-app: #f1f5f9;        
+            --surface: #ffffff;
+            --text-main: #0f172a;     
+            --text-muted: #64748b;    
+            --border: #e2e8f0;
+            
+            /* Status Colors */
+            --success: #10b981;
+            --success-bg: #ecfdf5;
+            --danger: #ef4444;
+            --danger-bg: #fef2f2;
+            --warning: #f59e0b;
+            --warning-bg: #fffbeb;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-app); 
+            color: var(--text-main); 
+            height: 100vh; 
+            overflow: hidden; 
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- LAYOUT UTILS --- */
+        .hidden { display: none !important; }
+        .fade-in { animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .fade-out { animation: fadeOut 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(10px); } }
+
+        /* --- LOGIN PAGE STYLES --- */
+        #view-login {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            background: var(--surface);
+            position: absolute;
+            top: 0; left: 0; z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+
+        .login-sidebar {
+            flex: 1;
+            background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 60px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Abstract Shapes for Login Background */
+        .login-sidebar::before {
+            content: ''; position: absolute; top: -10%; right: -10%; width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            border-radius: 50%;
+        }
+        .login-sidebar::after {
+            content: ''; position: absolute; bottom: 10%; left: -5%; width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 70%);
+            border-radius: 50%;
+        }
+
+        .login-hero-text h1 { font-size: 42px; letter-spacing: -0.02em; margin-bottom: 16px; font-weight: 800; }
+        .login-hero-text p { font-size: 18px; opacity: 0.8; line-height: 1.5; max-width: 400px; }
+        
+        .login-quote { font-size: 14px; opacity: 0.7; font-style: italic; border-left: 3px solid rgba(255,255,255,0.3); padding-left: 16px; }
+
+        .login-form-container {
+            width: 550px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px;
+            background: var(--surface);
+        }
+
+        .login-header { margin-bottom: 40px; }
+        .login-header h2 { font-size: 28px; font-weight: 700; margin-bottom: 8px; color: var(--text-main); }
+        .login-header p { color: var(--text-muted); font-size: 14px; }
+
+        .form-group { margin-bottom: 24px; position: relative; }
+        .form-label { display: block; font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 8px; }
+        .form-input { 
+            width: 100%; 
+            padding: 12px 16px; 
+            border: 1px solid var(--border); 
+            border-radius: 8px; 
+            font-size: 14px; 
+            font-family: inherit;
+            transition: all 0.2s;
+            outline: none;
+        }
+        .form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        .password-toggle { position: absolute; right: 16px; top: 40px; cursor: pointer; color: var(--text-muted); }
+        
+        .btn-block { width: 100%; justify-content: center; padding: 14px; font-size: 15px; margin-top: 10px; }
+
+        /* --- DASHBOARD WRAPPER --- */
+        #view-dashboard {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+            opacity: 0; /* Starts hidden for animation */
+        }
+
+        .sidebar { 
+            width: 280px; /* Slightly wider for new design */
+            background: var(--surface); 
+            border-right: 1px solid var(--border); 
+            padding: 32px 24px; 
+            display: flex; 
+            flex-direction: column; 
+            z-index: 20;
+            box-shadow: 4px 0 24px rgba(0,0,0,0.03);
+        }
+
+        .logo { 
+            font-size: 20px; 
+            font-weight: 800; 
+            color: var(--primary); 
+            margin-bottom: 48px; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            cursor: pointer;
+            letter-spacing: -0.5px;
+        }
+        
+        .nav-group { margin-bottom: 32px; }
+        .nav-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; color: #94a3b8; font-weight: 700; margin-bottom: 12px; padding-left: 12px; }
+
+        /* --- UPDATED NAV ITEMS (FROM REQUEST) --- */
+        .nav-item { 
+            padding: 12px 16px; 
+            margin-bottom: 6px; 
+            color: #64748b; /* Muted text color */
+            border-radius: 8px; /* Slightly tighter radius */
+            cursor: pointer; 
+            transition: all 0.2s ease; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            font-size: 15px; /* Slightly larger for readability */
+            font-weight: 500;
+            position: relative;
+        }
+
+        .nav-item svg {
+            color: #94a3b8; /* Lighter icon color by default */
+            transition: color 0.2s;
+            width: 20px;
+            height: 20px;
+        }
+
+        .nav-item:hover { 
+            background: #f8fafc; 
+            color: var(--text-main); 
+        }
+
+        .nav-item.active { 
+            background: #eef2ff; /* Very light blue background */
+            color: var(--primary); 
+            font-weight: 600; 
+            box-shadow: none;
+        }
+        
+        .nav-item.active svg {
+            color: var(--primary); /* Icon turns blue when active */
+        }
+
+        /* The vertical blue bar for active state */
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 6px;
+            bottom: 6px;
+            width: 4px;
+            background: var(--primary);
+            border-radius: 0 4px 4px 0;
+        }
+
+        .main { 
+            flex: 1; 
+            padding: 40px 60px; 
+            overflow-y: auto; 
+            background: var(--bg-app);
+        }
+
+        .header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px; }
+        .header h1 { font-size: 32px; font-weight: 700; letter-spacing: -0.03em; color: var(--text-main); margin-bottom: 4px;}
+        .header p { color: var(--text-muted); font-size: 15px; }
+
+        .user-pill { display: flex; align-items: center; gap: 12px; background: white; padding: 8px 12px 8px 16px; border-radius: 99px; border: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.02); font-size: 13px; font-weight: 600; }
+        .avatar { width: 32px; height: 32px; background: var(--text-main); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; background-size: cover; background-position: center;}
+
+        .panel { background: var(--surface); border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); overflow: hidden; margin-bottom: 32px; padding: 24px; }
+        .panel-header { margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); font-size: 18px; font-weight: 700; }
+        
+        .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 32px; }
+        .kpi-card { background: var(--surface); padding: 24px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); transition: transform 0.2s; }
+        .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .kpi-label { font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; letter-spacing: 0.5px; }
+        .kpi-value { font-size: 36px; font-weight: 700; color: var(--text-main); letter-spacing: -0.02em; }
+        .kpi-trend { font-size: 13px; margin-top: 12px; display: inline-flex; align-items: center; gap: 6px; font-weight: 500;}
+
+        .table-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #f8fafc; margin: -24px -24px 0 -24px; }
+        .table-title { font-size: 16px; font-weight: 700; color: var(--text-main); }
+        
+        /* --- TABLE STYLES --- */
+        table { width: 100%; border-collapse: collapse; border-spacing: 0; margin: 0 -24px; width: calc(100% + 48px); }
+        th { text-align: left; padding: 16px 24px; font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); background: #f8fafc; }
+        td { padding: 18px 24px; border-bottom: 1px solid var(--border); font-size: 14px; color: var(--text-main); vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #f8fafc; }
+
+        /* Drilldown Styles */
+        .batch-row { cursor: pointer; transition: background 0.2s; }
+        .batch-row:hover { background-color: #f1f5f9 !important; }
+        .batch-id-wrapper { display: flex; align-items: center; gap: 8px; color: var(--primary); }
+        .batch-details-row { display: none; background-color: #f8fafc; animation: slideDown 0.3s ease-out; }
+        .batch-details-row.open { display: table-row; }
+        .detail-container { padding: 24px; border-left: 4px solid var(--primary); margin: 0 24px; background: white; border-radius: 8px; border: 1px solid var(--border); border-left-width: 4px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .detail-table { margin: 0; width: 100%; }
+        .detail-table th { background: transparent; border-bottom: 1px solid #e2e8f0; padding: 10px; font-size: 10px; }
+        .detail-table td { padding: 10px; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .chevron { transition: transform 0.3s; }
+        .batch-row.active .chevron { transform: rotate(90deg); }
+
+        .badge { padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; display: inline-block; }
+        .badge-pending { background: var(--warning-bg); color: var(--warning); border: 1px solid #fcd34d; }
+        .badge-success { background: var(--success-bg); color: var(--success); border: 1px solid #6ee7b7; }
+        .badge-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid #fca5a5; }
+
+        .btn { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2); }
+        .btn:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 6px 10px -1px rgba(79, 70, 229, 0.3); }
+        .btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-secondary { background: white; border: 1px solid var(--border); color: var(--text-main); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .btn-secondary:hover { background: #f8fafc; border-color: #cbd5e1; box-shadow: none; }
+
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 32px; }
+        .card-wrapper { transition: all 0.4s ease; position: relative; }
+        .virtual-card { height: 220px; border-radius: 20px; padding: 28px; color: white; position: relative; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); overflow: hidden; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid rgba(255,255,255,0.1); }
+        .virtual-card::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E"); mix-blend-mode: overlay; pointer-events: none; }
+        .vc-dark { background: linear-gradient(135deg, #0f172a 0%, #334155 100%); }
+        .vc-blue { background: linear-gradient(135deg, #4f46e5 0%, #818cf8 100%); }
+        .vc-purple { background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%); }
+        .virtual-card::after { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(to bottom right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0) 100%); transform: rotate(30deg); pointer-events: none; }
+        .vc-chip { width: 45px; height: 32px; background: linear-gradient(135deg, #fcd34d 0%, #d97706 100%); border-radius: 6px; position: relative; border: 1px solid rgba(255,255,255,0.2); box-shadow: inset 0 1px 2px rgba(255,255,255,0.4); z-index: 2; }
+        .vc-number { font-family: 'Courier New', monospace; font-size: 22px; letter-spacing: 3px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); z-index: 2; margin-top: 15px;}
+        .vc-name { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 1px 2px rgba(0,0,0,0.3); z-index: 2;}
+        .vc-label { font-size: 10px; text-transform: uppercase; opacity: 0.8; margin-bottom: 4px; letter-spacing: 1px; z-index: 2;}
+        .card-controls { background: white; border: 1px solid var(--border); border-top: none; border-radius: 0 0 20px 20px; padding: 24px; margin-top: -24px; padding-top: 40px; position: relative; z-index: 0; }
+        .card-wrapper.frozen .virtual-card { filter: grayscale(100%) contrast(1.1) brightness(0.8) blur(1px); box-shadow: none; transform: scale(0.98); }
+
+        .switch-container { display: flex; align-items: center; justify-content: space-between; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
+        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        input:checked + .slider { background-color: var(--success); }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        .section { display: none; animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        .section.active { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .progress-bg { height: 8px; background: var(--bg-app); border-radius: 10px; width: 100%; margin-top: 8px; overflow: hidden;}
+        .progress-fill { height: 100%; border-radius: 10px; transition: width 1s ease; }
+
+        .toast { position: fixed; bottom: 40px; right: 40px; background: #1e293b; color: white; padding: 16px 24px; border-radius: 12px; display: flex; align-items: center; gap: 12px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3); transform: translateY(150px); transition: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 100; font-weight: 500; font-size: 14px; border: 1px solid rgba(255,255,255,0.1); }
+        .toast.show { transform: translateY(0); }
+        .spinner { width: 16px; height: 16px; border: 2px solid #ffffff; border-top: 2px solid transparent; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .code-block { background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; font-family: 'Courier New', monospace; font-size: 12px; color: #475569; display: none; margin-top: 16px; line-height: 1.5; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+        .code-block.visible { display: block; animation: fadeIn 0.3s; }
+
+        /* --- SETTINGS SPECIFIC STYLES --- */
+        .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+        .integration-card { border: 2px solid var(--border); border-radius: 12px; padding: 20px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 16px; }
+        .integration-card:hover { border-color: var(--primary); background: #eef2ff; }
+        .integration-card.active { border-color: var(--primary); background: #eef2ff; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.1); }
+        .integration-icon { width: 48px; height: 48px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 1px solid var(--border); }
+        .integration-radio { width: 20px; height: 20px; border: 2px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-left: auto; }
+        .integration-card.active .integration-radio { border-color: var(--primary); }
+        .integration-card.active .integration-radio::after { content: ''; width: 10px; height: 10px; background: var(--primary); border-radius: 50%; display: block; }
+
+    </style>
+</head>
+<body>
+
+    <div id="view-login">
+        <div class="login-sidebar">
+            <div class="logo" style="color: white; margin-bottom: 0;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                SaaS-Squasher
+            </div>
+            
+            <div class="login-hero-text">
+                <h1>Stop paying for<br>Zombie Software.</h1>
+                <p>The #1 spend management platform for wealth managers who care about their bottom line.</p>
+            </div>
+
+            <div class="login-quote">
+                "We saved CHF 12k in the first month alone."
+                <br><br>— CFO, Zurich Wealth Partners
+            </div>
+        </div>
+        
+        <div class="login-form-container">
+            <div class="login-header">
+                <h2>Welcome back</h2>
+                <p>Please enter your credentials to access the dashboard.</p>
+            </div>
+            
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" class="form-input" value="m.rossi@rossisa.ch" placeholder="name@company.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                        <label class="form-label" style="margin-bottom:0;">Password</label>
+                        <a href="#" style="font-size:12px; color:var(--primary); text-decoration:none; font-weight:600;">Forgot?</a>
+                    </div>
+                    <input type="password" class="form-input" value="password123" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" class="btn btn-block" id="btn-login">
+                    Sign In
+                </button>
+            </form>
+            
+            <p style="margin-top: 24px; text-align: center; font-size: 13px; color: var(--text-muted);">
+                Don't have an account? <a href="#" style="color:var(--primary); font-weight:600; text-decoration:none;">Create an Account</a>
+            </p>
+        </div>
+    </div>
+
+    <div id="view-dashboard" class="hidden">
+        <div class="sidebar">
+            <div class="logo" onclick="switchSection('dashboard')">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                SaaS-Squasher
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-label">Main Menu</div>
+                
+                <div class="nav-item active" id="nav-dashboard" onclick="switchSection('dashboard')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg>
+                    <span>Dashboard</span>
+                </div>
+                
+                <div class="nav-item" id="nav-cards" onclick="switchSection('cards')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                    <span>Virtual Cards</span>
+                </div>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-label">Intelligence</div>
+                
+                <div class="nav-item" id="nav-accounting" onclick="switchSection('accounting')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    <span>Accounting Sync</span>
+                </div>
+                
+                <div class="nav-item" id="nav-waste" onclick="switchSection('waste')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <span>Waste Report</span>
+                </div>
+            </div>
+
+            <div class="nav-group" style="margin-top: 0;">
+                <div class="nav-label">System</div>
+                
+                <div class="nav-item" id="nav-settings" onclick="switchSection('settings')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    <span>Settings</span>
+                </div>
+                
+                <div class="nav-item" style="color: var(--danger);" onclick="logout()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    <span>Log Out</span>
+                </div>
+            </div>
+
+            <div style="margin-top: auto;">
+                <div style="background: linear-gradient(145deg, #4f46e5, #3730a3); border-radius: 16px; padding: 24px; color: white; position: relative; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.4);">
+                    <div style="position: absolute; bottom: -20px; right: -20px; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+                    
+                    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; margin-bottom: 4px;">Total Savings</div>
+                    <div style="font-size: 26px; font-weight: 700; margin-bottom: 16px;">CHF 3,240</div>
+                    
+                    <div style="background: rgba(255,255,255,0.2); height: 6px; border-radius: 10px; overflow: hidden; margin-bottom: 8px;">
+                        <div style="background: white; width: 65%; height: 100%; border-radius: 10px;"></div>
+                    </div>
+                    <div style="font-size: 11px; opacity: 0.9;">65% of monthly goal reached</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main">
+            
+            <div class="header">
+                <div>
+                    <h1 id="page-title">Financial Overview</h1>
+                    <p>Nov 2025 • Rossi SA</p>
+                </div>
+                <div class="user-pill">
+                    <div class="avatar" id="header-avatar" style="background-image: url('https://ui-avatars.com/api/?name=Mario+Rossi&background=0F172A&color=fff');"></div>
+                    <span id="header-username">Wealth Manager Mode</span>
+                </div>
+            </div>
+
+            <div id="section-dashboard" class="section active">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-label">YTD SOFTWARE SPEND</div>
+                        <div class="kpi-value">CHF 24,500</div>
+                        <div class="kpi-trend" style="color: var(--danger);">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg>
+                            12% vs last year
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">IDENTIFIED SAVINGS</div>
+                        <div class="kpi-value" style="color: var(--success);">CHF 3,240</div>
+                        <div class="kpi-trend" style="color: var(--text-muted);">
+                            5 zombie subscriptions detected
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">PENDING RECONCILIATION</div>
+                        <div class="kpi-value" style="color: var(--warning);">3 Items</div>
+                        <div class="kpi-trend" style="color: var(--text-muted);">
+                            Requires export
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel" style="padding: 0;">
+                    <div class="table-header" style="margin: 0; padding: 20px 24px;">
+                        <div class="table-title">Recent Transactions</div>
+                        <button class="btn" id="dashboard-sync-btn" onclick="exportAll()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                            Sync to Bexio
+                        </button>
+                    </div>
+                    <table style="margin: 0; width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>SaaS Vendor</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Accounting Logic (AI)</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Zoom Video Comm.</strong><br><span style="color:#64748b; font-size:12px;">m.rossi@rossisa.ch</span></td>
+                                <td>USD 14.99</td>
+                                <td>28 Nov</td>
+                                <td><span class="badge badge-pending" id="status-1">Pending</span></td>
+                                <td>
+                                    <div id="accounting-1" style="color: #64748b; font-style: italic;">-- Waiting for sync --</div>
+                                    <div id="json-1" class="code-block"></div>
+                                </td>
+                                <td><button class="btn btn-secondary" id="btn-1" style="padding: 6px 12px; font-size:12px;" onclick="syncRow(1, 'Zoom', 14.99, '6510')">Sync</button></td>
+                            </tr>
+                            <tr>
+                                <td><strong>LinkedIn Premium</strong><br><span style="color:#64748b; font-size:12px;">admin@rossisa.ch</span></td>
+                                <td>CHF 39.00</td>
+                                <td>29 Nov</td>
+                                <td><span class="badge badge-pending" id="status-2">Pending</span></td>
+                                <td>
+                                    <div id="accounting-2" style="color: #64748b; font-style: italic;">-- Waiting for sync --</div>
+                                    <div id="json-2" class="code-block"></div>
+                                </td>
+                                <td><button class="btn btn-secondary" id="btn-2" style="padding: 6px 12px; font-size:12px;" onclick="syncRow(2, 'LinkedIn', 39.00, '6600')">Sync</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="section-cards" class="section">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
+                    <p style="max-width: 600px; color: var(--text-muted);">
+                        Manage spending limits and freeze cards instantly to prevent unauthorized "Shadow IT" spending.
+                    </p>
+                    <button class="btn" onclick="showToast('Create Card modal opening...')">+ Issue New Card</button>
+                </div>
+
+                <div class="cards-grid">
+                    <div class="card-wrapper" id="card-wrapper-1">
+                        <div class="virtual-card vc-blue">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; z-index:2;">
+                                <div class="vc-chip"></div>
+                                <span style="font-weight:700; font-style:italic; font-size:18px;">VISA</span>
+                            </div>
+                            <div class="vc-number">4242 •••• •••• 9912</div>
+                            <div style="display:flex; justify-content:space-between; z-index:2;">
+                                <div>
+                                    <div class="vc-label">Employee</div>
+                                    <div class="vc-name">MARIO ROSSI</div>
+                                </div>
+                                <div style="text-align:right;">
+                                    <div class="vc-label">EXP</div>
+                                    <div class="vc-name">12/28</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-controls">
+                            <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:600; color:var(--text-muted);">
+                                <span>Monthly Spend</span>
+                                <span>CHF 45 / 50</span>
+                            </div>
+                            <div class="progress-bg"><div class="progress-fill" style="width:90%; background:var(--warning);"></div></div>
+                            <div class="switch-container">
+                                <div>
+                                    <div style="font-size:11px; font-weight:700; color:var(--text-muted); letter-spacing:1px;">STATUS</div>
+                                    <div id="status-text-1" style="font-weight:700; color:var(--success);">Active</div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" checked onchange="toggleCard(this, 'card-wrapper-1', 'status-text-1')">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-wrapper" id="card-wrapper-2">
+                        <div class="virtual-card vc-purple">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; z-index:2;">
+                                <div class="vc-chip"></div>
+                                <span style="font-weight:700; font-style:italic; font-size:18px;">Mastercard</span>
+                            </div>
+                            <div class="vc-number">5500 •••• •••• 8831</div>
+                            <div style="display:flex; justify-content:space-between; z-index:2;">
+                                <div>
+                                    <div class="vc-label">Department</div>
+                                    <div class="vc-name">MARKETING</div>
+                                </div>
+                                <div style="text-align:right;">
+                                    <div class="vc-label">EXP</div>
+                                    <div class="vc-name">09/27</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-controls">
+                            <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:600; color:var(--text-muted);">
+                                <span>Monthly Spend</span>
+                                <span>CHF 120 / 200</span>
+                            </div>
+                            <div class="progress-bg"><div class="progress-fill" style="width:60%; background:var(--success);"></div></div>
+                            <div class="switch-container">
+                                <div>
+                                    <div style="font-size:11px; font-weight:700; color:var(--text-muted); letter-spacing:1px;">STATUS</div>
+                                    <div id="status-text-2" style="font-weight:700; color:var(--success);">Active</div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" checked onchange="toggleCard(this, 'card-wrapper-2', 'status-text-2')">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-wrapper" id="card-wrapper-3">
+                        <div class="virtual-card vc-dark">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; z-index:2;">
+                                <div class="vc-chip"></div>
+                                <span style="font-weight:700; font-style:italic; font-size:18px;">VISA</span>
+                            </div>
+                            <div class="vc-number">4000 •••• •••• 1290</div>
+                            <div style="display:flex; justify-content:space-between; z-index:2;">
+                                <div>
+                                    <div class="vc-label">Ex-Employee</div>
+                                    <div class="vc-name">LUCA BIANCHI</div>
+                                </div>
+                                <div style="text-align:right;">
+                                    <div class="vc-label">EXP</div>
+                                    <div class="vc-name">11/26</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-controls">
+                            <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:600; color:var(--text-muted);">
+                                <span>Monthly Spend</span>
+                                <span>CHF 0 / 100</span>
+                            </div>
+                            <div class="progress-bg"><div class="progress-fill" style="width:0%; background:var(--success);"></div></div>
+                            <div class="switch-container">
+                                <div>
+                                    <div style="font-size:11px; font-weight:700; color:var(--text-muted); letter-spacing:1px;">STATUS</div>
+                                    <div id="status-text-3" style="font-weight:700; color:var(--success);">Active</div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" checked onchange="toggleCard(this, 'card-wrapper-3', 'status-text-3')">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="section-accounting" class="section">
+                <div class="panel" style="background:#f0fdf4; border-color:#bbf7d0; padding:20px;">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <div style="width:12px; height:12px; background:#16a34a; border-radius:50%; box-shadow:0 0 0 4px #dcfce7;"></div>
+                        <div>
+                            <div style="font-weight:700; color:#14532d;" id="accounting-status-text">Connected to Bexio API (v3.0)</div>
+                            <div style="font-size:13px; color:#166534;">Last sync: 2 mins ago</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel" style="padding: 0;">
+                    <div class="table-header" style="margin: 0; padding: 20px 24px;">
+                        <div class="table-title">Audit Log & Compliance</div>
+                        <button class="btn btn-secondary" style="font-size:12px; padding:6px 12px;">Download CSV</button>
+                    </div>
+                    <table style="margin: 0; width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>Batch ID</th>
+                                <th>Timestamp</th>
+                                <th>Volume</th>
+                                <th>VAT Reclaimed</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="batch-row" onclick="toggleBatch('row-1', this)">
+                                <td>
+                                    <div class="batch-id-wrapper">
+                                        <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                        <span style="font-family:monospace; font-weight:600;">BATCH_8829</span>
+                                    </div>
+                                </td>
+                                <td>27 Nov, 14:00</td>
+                                <td>CHF 4,200.50</td>
+                                <td>CHF 339.00</td>
+                                <td><span class="badge badge-success">Success</span></td>
+                            </tr>
+                            <tr id="row-1" class="batch-details-row">
+                                <td colspan="5" style="padding: 0;">
+                                    <div class="detail-container">
+                                        <table class="detail-table">
+                                            <thead><tr><th>Transaction</th><th>Amount</th><th>Category</th><th>VAT Rate</th></tr></thead>
+                                            <tbody>
+                                                <tr><td>Salesforce License</td><td>CHF 3,500.00</td><td>Software</td><td>8.1%</td></tr>
+                                                <tr><td>Mailchimp</td><td>CHF 450.00</td><td>Marketing</td><td>8.1%</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr class="batch-row" onclick="toggleBatch('row-2', this)">
+                                <td>
+                                    <div class="batch-id-wrapper">
+                                        <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                        <span style="font-family:monospace; font-weight:600;">BATCH_8828</span>
+                                    </div>
+                                </td>
+                                <td>20 Nov, 09:30</td>
+                                <td>CHF 890.00</td>
+                                <td>CHF 65.00</td>
+                                <td><span class="badge badge-success">Success</span></td>
+                            </tr>
+                            <tr id="row-2" class="batch-details-row">
+                                <td colspan="5" style="padding: 0;">
+                                    <div class="detail-container">
+                                        <table class="detail-table">
+                                            <thead><tr><th>Transaction</th><th>Amount</th><th>Category</th><th>VAT Rate</th></tr></thead>
+                                            <tbody>
+                                                <tr><td>Adobe Creative Cloud</td><td>CHF 600.00</td><td>Design</td><td>8.1%</td></tr>
+                                                <tr><td>Figma Professional</td><td>CHF 290.00</td><td>Design</td><td>8.1%</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr class="batch-row" onclick="toggleBatch('row-3', this)">
+                                <td>
+                                    <div class="batch-id-wrapper">
+                                        <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                        <span style="font-family:monospace; font-weight:600;">BATCH_8827</span>
+                                    </div>
+                                </td>
+                                <td>15 Nov, 18:45</td>
+                                <td>CHF 2,000.00</td>
+                                <td>CHF 0.00</td>
+                                <td><span class="badge badge-danger">Flagged (Audit)</span></td>
+                            </tr>
+                            <tr id="row-3" class="batch-details-row">
+                                <td colspan="5" style="padding: 0;">
+                                    <div class="detail-container" style="border-left-color: var(--danger);">
+                                        <div style="margin-bottom:12px; font-size:12px; font-weight:600; color:var(--danger);">⚠️ Issue: Missing Invoice for high-value item</div>
+                                        <table class="detail-table">
+                                            <thead><tr><th>Transaction</th><th>Amount</th><th>Category</th><th>VAT Rate</th></tr></thead>
+                                            <tbody>
+                                                <tr><td>Unknown Vendor (Stripe)</td><td>CHF 2,000.00</td><td>Uncategorized</td><td style="color:var(--danger); font-weight:700;">0% (Error)</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="section-waste" class="section">
+                <div class="panel" style="background:#fffbeb; border-color:#fcd34d; padding:20px; display:flex; gap:16px;">
+                    <div style="font-size:24px;">💡</div>
+                    <div>
+                        <div style="font-weight:700; color:#92400e;">Optimization Insight</div>
+                        <div style="font-size:14px; color:#b45309;">AI detected 5 under-utilized subscriptions. Potential annual savings: <strong>CHF 3,240.00</strong>.</div>
+                    </div>
+                </div>
+
+                <div class="panel" style="padding: 0;">
+                    <div class="table-header" style="margin: 0; padding: 20px 24px;">
+                        <div class="table-title">Optimization Opportunities</div>
+                    </div>
+                    <table style="margin: 0; width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>Software</th>
+                                <th>Utilization Rate</th>
+                                <th>Issue</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="batch-row" onclick="toggleBatch('waste-1', this)">
+                                <td>
+                                    <div class="batch-id-wrapper">
+                                        <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                        <div>
+                                            <strong>Salesforce</strong><br><span style="color:#64748b; font-size:12px;">10 Seats</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="width:30%;">
+                                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+                                        <span>2 Active</span>
+                                        <span style="font-weight:700; color:var(--danger);">20%</span>
+                                    </div>
+                                    <div class="progress-bg"><div class="progress-fill" style="width:20%; background:var(--danger);"></div></div>
+                                </td>
+                                <td><span class="badge badge-danger">Over-provisioned</span></td>
+                                <td><button class="btn btn-secondary" style="font-size:12px; padding:6px 12px;">Downgrade</button></td>
+                            </tr>
+                            <tr id="waste-1" class="batch-details-row">
+                                <td colspan="4" style="padding: 0;">
+                                    <div class="detail-container" style="border-left-color: var(--danger);">
+                                        <div style="font-size:13px; color:#475569; display:flex; gap:24px;">
+                                            <div><strong>Cost:</strong> CHF 3,500 / yr</div>
+                                            <div><strong>Renewal:</strong> Dec 20, 2025</div>
+                                            <div><strong>Usage:</strong> Only Mario and Anna logged in last 30 days.</div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr class="batch-row" onclick="toggleBatch('waste-2', this)">
+                                <td>
+                                    <div class="batch-id-wrapper">
+                                        <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                        <div>
+                                            <strong>Asana</strong><br><span style="color:#64748b; font-size:12px;">5 Seats</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="width:30%;">
+                                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+                                        <span>2 Active</span>
+                                        <span style="font-weight:700; color:var(--warning);">40%</span>
+                                    </div>
+                                    <div class="progress-bg"><div class="progress-fill" style="width:40%; background:var(--warning);"></div></div>
+                                </td>
+                                <td><span class="badge badge-pending">Duplicate Tool</span></td>
+                                <td><button class="btn btn-secondary" style="font-size:12px; padding:6px 12px;">Review</button></td>
+                            </tr>
+                            <tr id="waste-2" class="batch-details-row">
+                                <td colspan="4" style="padding: 0;">
+                                    <div class="detail-container" style="border-left-color: var(--warning);">
+                                        <div style="font-size:13px; color:#475569; display:flex; gap:24px;">
+                                            <div><strong>Cost:</strong> CHF 600 / yr</div>
+                                            <div><strong>Renewal:</strong> Monthly</div>
+                                            <div><strong>Insight:</strong> Team also uses Trello. Consider consolidating.</div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr class="batch-row" onclick="toggleBatch('waste-3', this)">
+                                <td>
+                                    <div class="batch-id-wrapper">
+                                        <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                        <div>
+                                            <strong>DocuSign</strong><br><span style="color:#64748b; font-size:12px;">3 Seats</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="width:30%;">
+                                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+                                        <span>0 Active</span>
+                                        <span style="font-weight:700; color:var(--danger);">0%</span>
+                                    </div>
+                                    <div class="progress-bg"><div class="progress-fill" style="width:0%; background:var(--danger);"></div></div>
+                                </td>
+                                <td><span class="badge badge-danger">Unused</span></td>
+                                <td><button class="btn btn-secondary" style="font-size:12px; padding:6px 12px;">Cancel</button></td>
+                            </tr>
+                            <tr id="waste-3" class="batch-details-row">
+                                <td colspan="4" style="padding: 0;">
+                                    <div class="detail-container" style="border-left-color: var(--danger);">
+                                        <div style="font-size:13px; color:#475569; display:flex; gap:24px;">
+                                            <div><strong>Cost:</strong> CHF 450 / yr</div>
+                                            <div><strong>Renewal:</strong> Jan 15, 2026</div>
+                                            <div><strong>Usage:</strong> No logins in 90 days.</div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr class="batch-row" onclick="toggleBatch('waste-4', this)">
+                                <td>
+                                    <div class="batch-id-wrapper">
+                                        <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                        <div>
+                                            <strong>Slack</strong><br><span style="color:#64748b; font-size:12px;">20 Seats</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="width:30%;">
+                                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+                                        <span>15 Active</span>
+                                        <span style="font-weight:700; color:var(--success);">75%</span>
+                                    </div>
+                                    <div class="progress-bg"><div class="progress-fill" style="width:75%; background:var(--success);"></div></div>
+                                </td>
+                                <td><span class="badge badge-pending">Fair Usage</span></td>
+                                <td><button class="btn btn-secondary" style="font-size:12px; padding:6px 12px;">Manage</button></td>
+                            </tr>
+                            <tr id="waste-4" class="batch-details-row">
+                                <td colspan="4" style="padding: 0;">
+                                    <div class="detail-container" style="border-left-color: var(--success);">
+                                        <div style="font-size:13px; color:#475569; display:flex; gap:24px;">
+                                            <div><strong>Cost:</strong> CHF 2,400 / yr</div>
+                                            <div><strong>Renewal:</strong> Mar 01, 2026</div>
+                                            <div><strong>Insight:</strong> 5 seats available for new hires.</div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr class="batch-row" onclick="toggleBatch('waste-5', this)">
+                                <td>
+                                    <div class="batch-id-wrapper">
+                                        <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                        <div>
+                                            <strong>Adobe CC</strong><br><span style="color:#64748b; font-size:12px;">2 Seats</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="width:30%;">
+                                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+                                        <span>1 Active</span>
+                                        <span style="font-weight:700; color:var(--warning);">50%</span>
+                                    </div>
+                                    <div class="progress-bg"><div class="progress-fill" style="width:50%; background:var(--warning);"></div></div>
+                                </td>
+                                <td><span class="badge badge-pending">Partial Use</span></td>
+                                <td><button class="btn btn-secondary" style="font-size:12px; padding:6px 12px;">Check</button></td>
+                            </tr>
+                            <tr id="waste-5" class="batch-details-row">
+                                <td colspan="4" style="padding: 0;">
+                                    <div class="detail-container" style="border-left-color: var(--warning);">
+                                        <div style="font-size:13px; color:#475569; display:flex; gap:24px;">
+                                            <div><strong>Cost:</strong> CHF 1,200 / yr</div>
+                                            <div><strong>Renewal:</strong> Monthly</div>
+                                            <div><strong>Usage:</strong> Marketing team only using Photoshop, not Full Suite.</div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="section-settings" class="section">
+                
+                <div class="panel">
+                    <div class="panel-header">Profile Settings</div>
+                    <div class="settings-grid">
+                        <div>
+                            <div class="form-group">
+                                <label class="form-label">Avatar URL</label>
+                                <input type="text" id="profile-avatar" class="form-input" value="https://ui-avatars.com/api/?name=Mario+Rossi&background=0F172A&color=fff">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Full Name</label>
+                                <input type="text" id="profile-name" class="form-input" value="Mario Rossi">
+                            </div>
+                        </div>
+                        <div>
+                            <div class="form-group">
+                                <label class="form-label">Company Name</label>
+                                <input type="text" id="profile-company" class="form-input" value="Rossi SA">
+                            </div>
+                             <div class="form-group">
+                                <label class="form-label">Password</label>
+                                <input type="password" id="profile-password" class="form-input" value="password123">
+                                <span class="password-toggle" onclick="togglePasswordVisibility('profile-password')">👁️</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 24px; text-align: right;">
+                        <button class="btn" onclick="saveProfile()">Save Profile</button>
+                    </div>
+                </div>
+
+                 <div class="panel">
+                    <div class="panel-header">Security & SSO</div>
+                    <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 24px;">Connect your organization's Identity Provider (IdP) for Single Sign-On.</p>
+                    
+                    <div class="form-group" style="max-width: 600px;">
+                        <label class="form-label">SAML Metadata URL</label>
+                        <input type="text" class="form-input" placeholder="https://idp.example.com/metadata.xml">
+                    </div>
+                    <button class="btn btn-secondary" onclick="showToast('SSO Connection request sent to IT admin.')">Connect SSO</button>
+                </div>
+
+                 <div class="panel">
+                    <div class="panel-header">Accounting Integrations</div>
+                    <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 24px;">Select your primary accounting software for automatic reconciliation.</p>
+
+                    <div class="settings-grid" style="margin-bottom: 32px;">
+                        <div class="integration-card active" id="card-bexio" onclick="switchAccountingProvider('Bexio')">
+                            <div class="integration-icon" style="color: #2563eb; font-weight: 800;">B.</div>
+                            <div style="font-weight: 600;">Bexio</div>
+                            <div class="integration-radio"></div>
+                        </div>
+                        <div class="integration-card" id="card-abacus" onclick="switchAccountingProvider('Abacus')">
+                            <div class="integration-icon" style="color: #dc2626; font-weight: 800;">A.</div>
+                            <div style="font-weight: 600;">Abacus</div>
+                            <div class="integration-radio"></div>
+                        </div>
+                    </div>
+
+                    <div id="config-bexio">
+                        <div class="form-group" style="max-width: 400px;">
+                            <label class="form-label">Bexio API Token</label>
+                            <input type="password" class="form-input" value="bexio_live_8829a9d8e8f... ">
+                        </div>
+                    </div>
+
+                     <div id="config-abacus" class="hidden">
+                         <div class="form-group" style="max-width: 400px;">
+                            <label class="form-label">Abacus Client ID</label>
+                            <input type="text" class="form-input" placeholder="">
+                        </div>
+                        <div class="form-group" style="max-width: 400px;">
+                            <label class="form-label">Abacus Client Secret</label>
+                            <input type="password" class="form-input" placeholder="">
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 24px;">
+                        <button class="btn" onclick="saveIntegration()">Save Connection</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="toast" id="toast">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <div id="toast-message">Operation successful</div>
+    </div>
+
+    <script>
+        // --- GLOBAL STATE ---
+        let activeAccounting = 'Bexio'; // Default
+
+        // --- DRILL DOWN LOGIC ---
+        function toggleBatch(rowId, triggerElement) {
+            const row = document.getElementById(rowId);
+            
+            // Toggle open class on hidden row
+            if (row.classList.contains('open')) {
+                row.classList.remove('open');
+                triggerElement.classList.remove('active');
+            } else {
+                row.classList.add('open');
+                triggerElement.classList.add('active');
+            }
+        }
+
+        // --- LOGIN LOGIC ---
+        function handleLogin(event) {
+            event.preventDefault();
+            const btn = document.getElementById('btn-login');
+            const loginView = document.getElementById('view-login');
+            const dashView = document.getElementById('view-dashboard');
+
+            // 1. Loading State
+            btn.innerHTML = '<span class="spinner"></span> Signing in...';
+            btn.disabled = true;
+
+            // 2. Simulate Network Request
+            setTimeout(() => {
+                // 3. Fade out Login
+                loginView.style.opacity = '0';
+                
+                setTimeout(() => {
+                    loginView.classList.add('hidden');
+                    
+                    // 4. Show Dashboard with Animation
+                    dashView.classList.remove('hidden');
+                    dashView.classList.remove('fade-out'); // Ensure reset
+                    dashView.classList.add('fade-in');
+                    
+                    // Reset Button for next time
+                    btn.innerHTML = 'Sign In';
+                    btn.disabled = false;
+                    loginView.style.opacity = '1';
+                    
+                }, 500);
+            }, 1000);
+        }
+
+        function logout() {
+            const loginView = document.getElementById('view-login');
+            const dashView = document.getElementById('view-dashboard');
+            
+            // 1. Animate Dashboard Out
+            dashView.classList.remove('fade-in');
+            dashView.classList.add('fade-out');
+
+            setTimeout(() => {
+                // 2. Hide Dashboard
+                dashView.classList.add('hidden');
+                
+                // 3. Show Login
+                loginView.classList.remove('hidden');
+                // Force reflow
+                void loginView.offsetWidth; 
+                // Reset Login Opacity if it was modified inline
+                loginView.style.opacity = '1';
+                
+                // Reset Sections to default
+                switchSection('dashboard');
+                
+            }, 500);
+        }
+
+        // --- NAVIGATION ---
+        function switchSection(sectionId) {
+            document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+            document.getElementById('section-' + sectionId).classList.add('active');
+            // Safely check if nav item exists before adding class
+            const navItem = document.getElementById('nav-' + sectionId);
+            if (navItem) navItem.classList.add('active');
+
+            const titles = {
+                'dashboard': 'Financial Overview',
+                'cards': 'Virtual Cards Management',
+                'accounting': 'Accounting & Compliance',
+                'waste': 'SaaS Waste Report',
+                'settings': 'Settings & Integrations'
+            };
+            document.getElementById('page-title').innerText = titles[sectionId];
+        }
+
+        // --- SETTINGS & INTEGRATION LOGIC ---
+        
+        function switchAccountingProvider(provider) {
+            activeAccounting = provider;
+
+            // Update UI Cards
+            document.getElementById('card-bexio').classList.toggle('active', provider === 'Bexio');
+            document.getElementById('card-abacus').classList.toggle('active', provider === 'Abacus');
+
+            // Show relevant config form
+            document.getElementById('config-bexio').classList.toggle('hidden', provider !== 'Bexio');
+            document.getElementById('config-abacus').classList.toggle('hidden', provider !== 'Abacus');
+        }
+
+        function saveIntegration() {
+            // 1. Update UI across the app based on selection
+            updateAccountingUI();
+
+            // 2. Show success message
+            showToast(`${activeAccounting} connection saved successfully.`);
+        }
+
+        function updateAccountingUI() {
+             // Update Dashboard Button
+             const dashBtn = document.getElementById('dashboard-sync-btn');
+             dashBtn.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                Sync to ${activeAccounting}`;
+
+            // Update Accounting Page Banner
+            const accountText = document.getElementById('accounting-status-text');
+            accountText.innerText = `Connected to ${activeAccounting} API (v3.0)`;
+        }
+
+        function saveProfile() {
+            const name = document.getElementById('profile-name').value;
+            const avatarUrl = document.getElementById('profile-avatar').value;
+
+            // Update Header UI
+            document.getElementById('header-username').innerText = name;
+            document.getElementById('header-avatar').style.backgroundImage = `url('${avatarUrl}')`;
+
+            showToast("Profile updated successfully.");
+        }
+
+        function togglePasswordVisibility(fieldId) {
+            const input = document.getElementById(fieldId);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+
+        // --- VIRTUAL CARDS LOGIC ---
+        function toggleCard(checkbox, wrapperId, statusTextId) {
+            const wrapper = document.getElementById(wrapperId);
+            const statusText = document.getElementById(statusTextId);
+
+            if (!checkbox.checked) {
+                // Freeze
+                wrapper.classList.add('frozen');
+                statusText.innerText = "FROZEN";
+                statusText.style.color = "var(--danger)";
+                showToast("Card frozen. Security protocol active.");
+            } else {
+                // Unfreeze
+                wrapper.classList.remove('frozen');
+                statusText.innerText = "Active";
+                statusText.style.color = "var(--success)";
+                showToast("Card reactivated.");
+            }
+        }
+
+        // --- SYNC LOGIC ---
+        function syncRow(id, vendor, amount, accountCode) {
+            const btn = document.getElementById(`btn-${id}`);
+            const statusBadge = document.getElementById(`status-${id}`);
+            const accountingDiv = document.getElementById(`accounting-${id}`);
+            const jsonPreview = document.getElementById(`json-${id}`);
+
+            btn.innerHTML = '<span class="spinner"></span> Syncing...';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                statusBadge.className = "badge badge-success";
+                statusBadge.innerText = "Synced";
+
+                btn.innerText = "Synced";
+                btn.style.display = "none"; // Hide button after sync
+
+                accountingDiv.innerHTML = `<span style='color:var(--success); font-weight:600;'>✅ Acc: ${accountCode}</span> | VAT: 8.1%`;
+
+                const fakePayload = {
+                    vendor: vendor,
+                    amount: amount,
+                    account_id: parseInt(accountCode),
+                    vat_code: "MWST_FULL",
+                    status: "200 OK",
+                    target_system: activeAccounting // Added target system to payload
+                };
+                jsonPreview.innerText = JSON.stringify(fakePayload, null, 2);
+                jsonPreview.classList.add('visible');
+
+                showToast(`Invoice ${vendor} synced to ${activeAccounting}.`);
+            }, 1200);
+        }
+
+        function exportAll() {
+            setTimeout(() => { if(document.getElementById('btn-1').style.display !== 'none') syncRow(1, 'Zoom', 14.99, '6510'); }, 0);
+            setTimeout(() => { if(document.getElementById('btn-2').style.display !== 'none') syncRow(2, 'LinkedIn', 39.00, '6600'); }, 600);
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+
+        // Initialize UI on load
+        updateAccountingUI();
+    </script>
+</body>
+</html>
